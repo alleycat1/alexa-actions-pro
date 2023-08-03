@@ -1,0 +1,60 @@
+
+# ... general stuff - keep here, and only add the below to your configuration.yaml
+
+input_text:
+  alexa_actionable_notification:
+    name: Alexa Actionable Notification Holder
+    max: 255
+    initial: '{"text": "This is a test of the alexa actionable notifications skill. Did it work?", "event": "actionable.skill.test"}'
+
+script:
+  activate_alexa_actionable_notification:
+  alias: activate_alexa_actionable_notification
+  description: Activates an actionable notification on a specific echo device
+  fields:
+    message:
+      name: Message
+      description: The content of the message that you want to be announced.
+      required: true
+      example: "Would you like the heating turned off?"
+      selector:
+        text:
+          type: text
+          multiline: false
+    event_id:
+      name: Event ID
+      description: Correlation ID for event responses
+      required: true
+      example: "ask_for_temperature"
+      selector:
+        text:
+          type: text
+          multiline: false
+    alexa_device:
+      name: Alexa Device
+      description: Alexa device you want to trigger
+      required: true
+      example: "media_player.bedroom_echo"
+      selector:
+        entity:
+          filter:
+            - integration: alexa_media
+              domain: media_player
+    suppress_confirmation:
+      name: Suppress Confirmation
+      description: Set true if you want to suppress 'okay' confirmation
+      required: true
+      example: "true"
+      selector:
+        boolean: null
+  sequence:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.alexa_actionable_notification
+        value: '{"text": "{{ message }}", "event": "{{ event_id }}", "suppress_confirmation": "{{ suppress_confirmation }}"}'
+    - service: media_player.play_media
+      data_template:
+        entity_id: "{{ alexa_device }}"
+        media_content_type: skill
+        media_content_id:  <Your Skill ID>
+  mode: single
